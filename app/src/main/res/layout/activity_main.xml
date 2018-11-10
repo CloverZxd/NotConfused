@@ -8,5 +8,5 @@
         android:id="@+id/mfragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:name="com.zxd.notconfused.homePageFragment"/>
+        android:name="com.zxd.notconfused.ui.fragment.homePageFragment"/>
 </FrameLayout>

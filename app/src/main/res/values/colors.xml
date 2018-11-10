@@ -1,6 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#FF4081</color>
+    <color name="colorPrimary">#E43F3F</color>
+    <color name="colorPrimaryDark">#E43F3F</color>
+    <color name="colorAccent">#E43F3F</color>
+
+
+
+    <!-- Text color -->
+
+    <color name="text_login">#8a8a8a</color>
+
+    <color name="white">#ffffff</color>
+
+
+    <color name="text_black">#2c2c2c</color>
+    <color name="text_black_deep">#000000</color>
+    <color name="text_black_normal">#666666</color>
+    <color name="text_blue">#085EB3</color>
+
+
+
+    <!-- bg  color -->
+    <color name="bg">#E43F3F</color>
+    <!-- Normal color -->
+    <color name="gray_l_normal">#F8F8FA</color>
+    <color name="gray_l_deep">#F1F1F1</color>
+    <color name="gray">#dddddd</color>
+    <color name="text_green">#66cc66</color>
+    <color name="orange">#F19249</color>
+    <color name="orange_deep">#FA9703</color>
+    <color name="line_gray">#f0f0f0</color>
+    <color name="yellow">#F0C662</color>
+    <color name="background_gray">#F4F3F3</color>
+    <color name="background_cs">#B63C7E</color>
+    <color name="background_gray_normal">#e6e6e6</color>
+    <color name="background_gray_nl">#eeeeee</color>
+    <color name="bg_gray">#F6F6F6</color>
+    <color name="bg_mblue">#227BC2</color>
+
+    <!-- Line color -->
+
+    <color name="line_gray_deep">#999999</color>
+    <color name="line_gray_c">#e6e6e6</color>
+    <color name="line_gray_d">#dddddd</color>
+    <color name="vifrification">#00000000</color>
+
+
 </resources>

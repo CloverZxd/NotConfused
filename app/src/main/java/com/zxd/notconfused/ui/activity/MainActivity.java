@@ -1,7 +1,9 @@
-package com.zxd.notconfused;
+package com.zxd.notconfused.ui.activity;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+
+import com.zxd.notconfused.R;
 
 public class MainActivity extends AppCompatActivity {
 

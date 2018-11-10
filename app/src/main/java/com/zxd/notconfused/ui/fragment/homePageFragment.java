@@ -1,4 +1,4 @@
-package com.zxd.notconfused;
+package com.zxd.notconfused.ui.fragment;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -16,6 +16,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.zxd.notconfused.R;
 import com.zxd.notconfused.adapter.homeGridViewAdpter;
 import com.zxd.notconfused.adapter.homeViewPagerAdapter;
 import com.zxd.notconfused.bean.a0;

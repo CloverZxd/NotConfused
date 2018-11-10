@@ -8,4 +8,8 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    //登录界面的背景
+    <style name="loginActivityTheme" parent="@style/AppTheme">
+        <item name="android:colorBackground">@color/colorPrimary</item>
+    </style>
 </resources>
