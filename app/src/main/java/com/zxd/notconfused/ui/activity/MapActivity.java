@@ -1,18 +1,12 @@
 package com.zxd.notconfused.ui.activity;
 
-import android.Manifest;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.amap.api.location.AMapLocation;
 import com.amap.api.location.AMapLocationClient;
@@ -27,12 +21,11 @@ import com.amap.api.maps.model.LatLng;
 import com.zxd.notconfused.R;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+
 
 public class MapActivity extends AppCompatActivity implements LocationSource, AMapLocationListener, View.OnClickListener {
 
@@ -76,27 +69,7 @@ public class MapActivity extends AppCompatActivity implements LocationSource, AM
         ButterKnife.bind(this);
         back.setOnClickListener(this);
         mapView.onCreate(savedInstanceState);
-        //判断定位相关权限打开了没有
-        List<String> permissionList = new ArrayList<>();
-        if(ContextCompat.checkSelfPermission(MapActivity.this, Manifest.
-                permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
-            permissionList.add(Manifest.permission.ACCESS_FINE_LOCATION);
-        }
-        if(ContextCompat.checkSelfPermission(MapActivity.this, Manifest.
-                permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED){
-            permissionList.add(Manifest.permission.READ_PHONE_STATE);
-        }
-        if(ContextCompat.checkSelfPermission(MapActivity.this, Manifest.
-                permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
-            permissionList.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        }
-
-        if(!permissionList.isEmpty()){
-            String [] permissions = permissionList.toArray(new String[permissionList.size()]);
-            ActivityCompat.requestPermissions(MapActivity.this,permissions,1);
-        }else{
-            init();
-        }
+        init();
 
     }
     private void init() {
@@ -214,14 +187,14 @@ public class MapActivity extends AppCompatActivity implements LocationSource, AM
                     //添加图钉
                     //  aMap.addMarker(getMarkerOptions(amapLocation));
                     //获取定位信息
-                    StringBuffer buffer = new StringBuffer();
+                /*    StringBuffer buffer = new StringBuffer();
                     buffer.append(aMapLocation.getCountry() + ""
                             + aMapLocation.getProvince() + ""
                             + aMapLocation.getCity() + ""
                             + aMapLocation.getProvince() + ""
                             + aMapLocation.getDistrict() + ""
                             + aMapLocation.getStreet() + ""
-                            + aMapLocation.getStreetNum());
+                            + aMapLocation.getStreetNum());*/
 //                    Toast.makeText(getApplicationContext(), buffer.toString(), Toast.LENGTH_LONG).show();
                     //展示地址
                     tv_title.setText(aMapLocation.getPoiName());
@@ -251,27 +224,6 @@ public class MapActivity extends AppCompatActivity implements LocationSource, AM
         mListener = null;
     }
 
-    //设置打开定位权限
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode){
-            case 1:
-                if(grantResults.length>0){
-                    for (int result:grantResults){
-                        if(result != PackageManager.PERMISSION_GRANTED){
-                            Toast.makeText(MapActivity.this,"必须同意所有权限才可以使用本应用",Toast.LENGTH_SHORT).show();
-                            finish();
-                            return;
-                        }
-                    }
-                    init();
-                }else{
-                    Toast.makeText(MapActivity.this,"发生未知错误",Toast.LENGTH_SHORT).show();
-                    finish();
-                }
-                break;
-        }
-    }
 
     @Override
     public void onClick(View view) {
@@ -281,26 +233,4 @@ public class MapActivity extends AppCompatActivity implements LocationSource, AM
                 break;
         }
     }
-/*
-    private void setCurrentLocationDetails(){
-        // 地址逆解析
-        geocodeSearch = new GeocodeSearch(getApplicationContext());
-        geocodeSearch.setOnGeocodeSearchListener(this);
-        // 第一个参数表示一个Latlng(经纬度)，第二参数表示范围多少米，第三个参数表示是火系坐标系还是GPS原生坐标系
-        RegeocodeQuery query = new RegeocodeQuery(latLonPoint, 25, GeocodeSearch.AMAP);
-        geocodeSearch.getFromLocationAsyn(query);
-
-    }*/
-
-
-/*    @Override
-    public void onRegeocodeSearched(RegeocodeResult regeocodeResult, int i) {
-        String formatAddress = regeocodeResult.getRegeocodeAddress().getFormatAddress();
-        Toast.makeText(MapActivity.this,formatAddress,Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public void onGeocodeSearched(GeocodeResult geocodeResult, int i) {
-
-    }*/
 }

@@ -17,7 +17,8 @@
     <color name="text_black_deep">#000000</color>
     <color name="text_black_normal">#666666</color>
     <color name="text_blue">#085EB3</color>
-
+    <color name="tab_checked">#FF9F2D</color>
+    <color name="tab_unchecked">#afafaf</color>
 
 
     <!-- bg  color -->

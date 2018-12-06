@@ -2,14 +2,15 @@ package com.zxd.notconfused.ui.fragment;
 
 import android.Manifest;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
@@ -21,6 +22,7 @@ import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,6 +30,12 @@ import com.amap.api.location.AMapLocation;
 import com.amap.api.location.AMapLocationClient;
 import com.amap.api.location.AMapLocationClientOption;
 import com.amap.api.location.AMapLocationListener;
+import com.amap.api.services.weather.LocalDayWeatherForecast;
+import com.amap.api.services.weather.LocalWeatherForecastResult;
+import com.amap.api.services.weather.LocalWeatherLive;
+import com.amap.api.services.weather.LocalWeatherLiveResult;
+import com.amap.api.services.weather.WeatherSearch;
+import com.amap.api.services.weather.WeatherSearchQuery;
 import com.bumptech.glide.Glide;
 import com.xuezj.cardbanner.CardBanner;
 import com.xuezj.cardbanner.ImageData;
@@ -38,23 +46,53 @@ import com.zxd.notconfused.adapter.homeGridViewAdpter;
 import com.zxd.notconfused.adapter.homeViewPagerAdapter;
 import com.zxd.notconfused.bean.a0;
 import com.zxd.notconfused.ui.activity.MapActivity;
+import com.zxd.notconfused.ui.activity.WeatherActivity;
 import com.zxd.notconfused.ui.views.bannerImageView;
+import com.zxd.notconfused.utils.mUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class homePageFragment extends Fragment implements View.OnClickListener {
+import pub.devrel.easypermissions.AfterPermissionGranted;
+import pub.devrel.easypermissions.AppSettingsDialog;
+import pub.devrel.easypermissions.EasyPermissions;
 
+public class HomePageFragment extends Fragment implements View.OnClickListener ,EasyPermissions.PermissionCallbacks {
+
+    /**
+     * 所需权限
+     */
+    public static final int ACCESS_FINE_LOCATION=100;
 
     //主View
     private  View view;
 
+
+    //侧滑菜单
+    DrawerLayout drawer;
+
+    NavigationView navigationView;
     //====================获取地理位置信息=======================
 
     //声明AMapLocationClient类对象
     AMapLocationClient mLocationClient = null;
     //声明AMapLocationClientOption对象
     public AMapLocationClientOption mLocationOption = null;
+    //标识，用于判断是否只显示一次定位信息和用户重新定位
+    private boolean isFirstLoc = true;
+
+    /**
+     * 利用高德地图查询天气
+     */
+    WeatherSearchQuery mquery;
+
+    WeatherSearch mweathersearch;
+    //获取实时天气
+    LocalWeatherLive weatherlive;
+    //获取未来天气
+    List<LocalDayWeatherForecast> mDayWeatherList;
+
+    String county = "";
 
     //====================轮播图部分=============================
     private CardBanner banner;
@@ -92,48 +130,68 @@ public class homePageFragment extends Fragment implements View.OnClickListener {
     LinearLayout ll_location;
     TextView tv_location;
 
+    //天气显示部分
+    RelativeLayout rl_tq;
+    //温度
+    TextView tv_wd;
+    //天气描述
+    TextView tv_tq;
+    //天气图标
+    ImageView iv_tq;
+
+    //获取天气信息
+
+    String wd;
+    String tq;
+
+
+
+    private Handler mHandler;
+
+
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_homepage,container,false);
         toolbar=view.findViewById(R.id.toolbar);
+
+        Toast.makeText(getActivity(),"你好123",Toast.LENGTH_SHORT).show();
         //fragment声明
         setHasOptionsMenu(true);
         ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
         //隐藏自带的项目名称
         ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayShowTitleEnabled(false);
 
-        checkpermission();//获取定位相关权限
+
+      /*  drawer = view.findViewById(R.id.drawer_layout);
+
+        navigationView = view.findViewById(R.id.nav_view);*/
+        //判断权限是否加入
+        checkPerm();
         initResources();//获取资源文件，动态添加列表数据
         initBanner();
         initView();
+
+        mHandler = new Handler(){
+            @Override
+            public void handleMessage(Message msg) {
+                super.handleMessage(msg);
+                switch (msg.what){
+
+                    case 0:
+                        //更新天气信息
+                        tv_wd.setText(wd+"℃");
+                        tv_tq.setText(tq);
+                        iv_tq.setImageResource(mUtils.getWeatherImage(tq));
+                        break;
+                }
+            }
+        };
         return view;
     }
 
-    private void checkpermission() {
-        //判断定位相关权限打开了没有
-        List<String> permissionList = new ArrayList<>();
-        if(ContextCompat.checkSelfPermission(getActivity(), Manifest.
-                permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
-            permissionList.add(Manifest.permission.ACCESS_FINE_LOCATION);
-        }
-        if(ContextCompat.checkSelfPermission(getActivity(), Manifest.
-                permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED){
-            permissionList.add(Manifest.permission.READ_PHONE_STATE);
-        }
-        if(ContextCompat.checkSelfPermission(getActivity(), Manifest.
-                permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
-            permissionList.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        }
-
-        if(!permissionList.isEmpty()){
-            String [] permissions = permissionList.toArray(new String[permissionList.size()]);
-            ActivityCompat.requestPermissions(getActivity(),permissions,1);
-        }else{
-            getCurrentLocationLatLng();//获取地理位置信息
-        }
-    }
 
     private void getCurrentLocationLatLng() {
         //展示定位信息
@@ -142,39 +200,31 @@ public class homePageFragment extends Fragment implements View.OnClickListener {
         //默认显示定位中...
         tv_location.setText("正在定位...");
         ll_location.setOnClickListener(this);
+
+        //展示天气部分数据
+        tv_wd = view.findViewById(R.id.tv_wd);
+        tv_tq = view.findViewById(R.id.tv_tq);
+        iv_tq = view.findViewById(R.id.iv_tq);
+
         //初始化定位
         mLocationClient = new AMapLocationClient(getActivity());
         //设置定位回调监听
         mLocationClient.setLocationListener(mLocationListener);
         //初始化AMapLocationClientOption对象
         mLocationOption = new AMapLocationClientOption();
-
- /* //设置定位场景，目前支持三种场景（签到、出行、运动，默认无场景） 设置了场景就不用配置定位模式等
-    option.setLocationPurpose(AMapLocationClientOption.AMapLocationPurpose.SignIn);
-    if(null != locationClient){
-        locationClient.setLocationOption(option);
-        //设置场景模式后最好调用一次stop，再调用start以保证场景模式生效
-        locationClient.stopLocation();
-        locationClient.startLocation();
-    }*/
-        // 同时使用网络定位和GPS定位,优先返回最高精度的定位结果,以及对应的地址描述信息
+        //设置定位模式为Hight_Accuracy高精度模式，Battery_Saving为低功耗模式，Device_Sensors是仅设备模式
         mLocationOption.setLocationMode(AMapLocationClientOption.AMapLocationMode.Hight_Accuracy);
-        //只会使用网络定位
-        /* mLocationOption.setLocationMode(AMapLocationClientOption.AMapLocationMode.Battery_Saving);*/
-        //只使用GPS进行定位
-        /*mLocationOption.setLocationMode(AMapLocationMode.Device_Sensors);*/
-        // 设置为单次定位 默认为false
-        /*mLocationOption.setOnceLocation(true);*/
+        //设置是否返回地址信息（默认返回地址信息）
+        mLocationOption.setNeedAddress(true);
+        //设置是否只定位一次,默认为false
+        mLocationOption.setOnceLocation(true);
         //设置定位间隔,单位毫秒,默认为2000ms，最低1000ms。默认连续定位 切最低时间间隔为1000ms
         mLocationOption.setInterval(10000);
-        //设置是否返回地址信息（默认返回地址信息）
-        /*mLocationOption.setNeedAddress(true);*/
-        //关闭缓存机制 默认开启 ，在高精度模式和低功耗模式下进行的网络定位结果均会生成本地缓存,不区分单次定位还是连续定位。GPS定位结果不会被缓存。
-        /*mLocationOption.setLocationCacheEnable(false);*/
         //给定位客户端对象设置定位参数
         mLocationClient.setLocationOption(mLocationOption);
         //启动定位
         mLocationClient.startLocation();
+
     }
 
     private void initBanner() {
@@ -221,7 +271,8 @@ public class homePageFragment extends Fragment implements View.OnClickListener {
         //初始化控件
         vp=view.findViewById(R.id.viewpager);
         points=view.findViewById(R.id.points);
-
+        rl_tq = view.findViewById(R.id.rl_tq);
+        rl_tq.setOnClickListener(this);
         for(a0 a0 : menuList){
             View view = LayoutInflater.from(getActivity()).inflate(R.layout.item_list_homegirdview,
                     null);
@@ -299,6 +350,7 @@ public class homePageFragment extends Fragment implements View.OnClickListener {
         });
 
     }
+
 
 
     //获取手机屏幕宽度
@@ -406,6 +458,12 @@ public class homePageFragment extends Fragment implements View.OnClickListener {
             case  R.id.ll_location:
                 startActivity(new Intent(getActivity(), MapActivity.class));
                 break;
+            case R.id.rl_tq:
+                Intent intent = new Intent(getActivity(),WeatherActivity.class);
+                intent.putExtra("county",county);
+                startActivity(intent);
+
+                break;
         }
     }
 
@@ -425,22 +483,29 @@ public class homePageFragment extends Fragment implements View.OnClickListener {
     public AMapLocationListener mLocationListener = new AMapLocationListener() {
         @Override
         public void onLocationChanged(AMapLocation amapLocation) {
-        /*    if (!IsGpsWork.isGpsEnabled(getActivity())) {
-                Toast toast = Toast.makeText(getActivity(), "打开gps", Toast.LENGTH_SHORT);
-                toast.setGravity(Gravity.CENTER, 0, 0);
-                toast.show();
-            } else {*/
                 if (amapLocation != null) {
                     if (amapLocation.getErrorCode() == 0) {
-                        //定位成功回调信息，设置相关消息
-                        amapLocation.getLocationType();//获取当前定位结果来源，如网络定位结果，详见定位类型表
-                        double currentLat = amapLocation.getLatitude();//获取纬度
-                        double currentLon = amapLocation.getLongitude();//获取经度
-//                        latLonPoint = new LatLonPoint(currentLat, currentLon);  // latlng形式的
-                        /*currentLatLng = new LatLng(currentLat, currentLon);*/   //latlng形式的
-                        Log.i("currentLocation", "currentLat : " + currentLat + " currentLon : " + currentLon);
-                        amapLocation.getAccuracy();//获取精度信息
-                        tv_location.setText(amapLocation.getPoiName());
+
+                        //只定位一次
+                        if (isFirstLoc) {
+                            //定位成功回调信息，设置相关消息
+                            amapLocation.getLocationType();//获取当前定位结果来源，如网络定位结果，详见定位类型表
+                            double currentLat = amapLocation.getLatitude();//获取纬度
+                            double currentLon = amapLocation.getLongitude();//获取经度
+                            Log.i("currentLocation", "currentLat : " + currentLat + " currentLon : " + currentLon);
+                            amapLocation.getAccuracy();//获取精度信息
+                            tv_location.setText(amapLocation.getPoiName());
+                            county = amapLocation.getCity();
+                            //获取天气信息
+                            //检索参数为城市和天气类型，实况天气为WEATHER_TYPE_LIVE、天气预报为WEATHER_TYPE_FORECAST
+                            mquery = new WeatherSearchQuery(amapLocation.getCity(), WeatherSearchQuery.WEATHER_TYPE_LIVE);
+                            mweathersearch=new WeatherSearch(getActivity());
+                            mweathersearch.setOnWeatherSearchListener(onWeatherSearchListener);
+                            mweathersearch.setQuery(mquery);
+                            mweathersearch.searchWeatherAsyn(); //异步搜索
+
+                            isFirstLoc = false;
+                        }
                     } else {
                         //显示错误信息ErrCode是错误码，errInfo是错误信息，详见错误码表。
                         Log.e("AmapError", "location Error, ErrCode:"
@@ -449,35 +514,89 @@ public class homePageFragment extends Fragment implements View.OnClickListener {
                         tv_location.setText("定位失败");
                     }
                 }
-            //}
         }
     };
 
-    //设置打开定位权限
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode){
-            case 1:
-                if(grantResults.length>0){
-                    for (int result:grantResults){
-                        if(result != PackageManager.PERMISSION_GRANTED){
-                            Toast.makeText(getActivity(),"必须同意所有权限才可以使用本应用",Toast.LENGTH_SHORT).show();
-                            return;
-                        }
-                    }
-                    getCurrentLocationLatLng();//获取地理位置信息
-                }else{
-                    Toast.makeText(getActivity(),"发生未知错误",Toast.LENGTH_SHORT).show();
+
+   public WeatherSearch.OnWeatherSearchListener onWeatherSearchListener = new WeatherSearch.OnWeatherSearchListener() {
+        //实况天气
+        @Override
+        public void onWeatherLiveSearched(LocalWeatherLiveResult weatherLiveResult ,int rCode) {
+            if (rCode == 1000) {
+                if (weatherLiveResult != null&&weatherLiveResult.getLiveResult() != null) {
+                    weatherlive = weatherLiveResult.getLiveResult();
+                    wd = weatherlive.getTemperature();
+                    tq = weatherlive.getWeather();
+                    mHandler.sendEmptyMessage(0);
+                }else {
+                    Toast.makeText(getActivity(),"天气获取失败",Toast.LENGTH_SHORT).show();
                 }
-                break;
+            }else {
+                Toast.makeText(getActivity(),"天气获取失败"+rCode,Toast.LENGTH_SHORT).show();
+            }
         }
+
+        //预报天气
+        @Override
+        public void onWeatherForecastSearched(LocalWeatherForecastResult localWeatherForecastResult, int rCode) {
+            if (rCode == 1000) {
+                if (localWeatherForecastResult != null&&localWeatherForecastResult.getForecastResult() != null) {
+                    mDayWeatherList = localWeatherForecastResult.getForecastResult().getWeatherForecast();
+//                    weatherlive = weatherLiveResult.getLiveResult();
+                    Toast.makeText(getActivity(),localWeatherForecastResult.getForecastResult().toString(),Toast.LENGTH_LONG).show();
+                }else {
+                    Toast.makeText(getActivity(),"天气获取失败",Toast.LENGTH_SHORT).show();
+                }
+            }else {
+                Toast.makeText(getActivity(),"天气获取失败"+rCode,Toast.LENGTH_SHORT).show();
+            }
+        }
+    };
+
+
+    /**
+     * 检查权限
+     */
+    @AfterPermissionGranted(ACCESS_FINE_LOCATION)
+    private void checkPerm() {
+        //权限参数
+        String[] params={Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.WRITE_EXTERNAL_STORAGE};
+        if(EasyPermissions.hasPermissions(getActivity(),params)){
+            getCurrentLocationLatLng();
+        }else{
+            EasyPermissions.requestPermissions(this,"需要开通定位权限",ACCESS_FINE_LOCATION,params);
+        }
+
+
     }
 
-/*    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        menu.clear();
-        if (getChildFragmentManager().getBackStackEntryCount() == 0) {
-            inflater.inflate(R.menu.menu_home_page_fragment, menu);
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
+    }
+
+    @Override
+    public void onPermissionsGranted(int requestCode, List<String> perms) {
+
+    }
+
+    @Override
+    public void onPermissionsDenied(int requestCode, List<String> perms) {
+        if (EasyPermissions.somePermissionPermanentlyDenied(this, perms)) {
+            //这里表示拒绝权限后再点击出现的去设置对话框
+            //这里需要重新设置Rationale和title，否则默认是英文格式
+            //Rationale：对话框的提示内容，否则默认是英文格式
+            // title：对话框的提示标题，否则默认是英文格式
+
+
+            new AppSettingsDialog.Builder(this)
+                    .setRationale("没有该权限，此应用程序可能无法正常工作。打开应用设置屏幕以修改应用权限")
+                    .setTitle("必需权限")
+                    .build()
+                    .show();
         }
-    }*/
+
+    }
+
 }

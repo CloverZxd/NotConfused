@@ -6,57 +6,47 @@
     android:orientation="vertical"
     android:background="@color/white">
 
-    <android.support.v7.widget.Toolbar
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="?attr/colorPrimary"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-        >
-        <include
-            android:id="@+id/title_home_page"
-            layout="@layout/title_home_pagefragment"/>
-
-  <!--      <TextView
-            android:id="@+id/address"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:gravity="center_vertical"
-            android:textColor="@color/white"
-            android:textSize="14dp"
-            android:text="天安门"/>-->
-    </android.support.v7.widget.Toolbar>
-
-    <com.xuezj.cardbanner.CardBanner
-        android:id="@+id/banner"
-        android:layout_width="match_parent"
-        android:layout_height="160dp"
-        android:paddingTop="10dp"
-        android:paddingBottom="10dp"/>
-
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="220dp"
-        android:background="#fff"
-        >
-
-        <android.support.v4.view.ViewPager
-            android:id="@+id/viewpager"
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp"/>
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+            app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+            >
+            <include
+                android:id="@+id/title_home_page"
+                layout="@layout/title_home_pagefragment"/>
 
-        <LinearLayout
-            android:id="@+id/points"
+        </android.support.v7.widget.Toolbar>
+
+        <com.xuezj.cardbanner.CardBanner
+            android:id="@+id/banner"
             android:layout_width="match_parent"
-            android:layout_height="20dp"
-            android:layout_alignParentBottom="true"
-            android:gravity="center"
-            android:orientation="horizontal" />
-    </RelativeLayout>
+            android:layout_height="150dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"/>
 
 
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="220dp"
+            android:background="#fff"
+            >
+
+            <android.support.v4.view.ViewPager
+                android:id="@+id/viewpager"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"/>
+
+            <LinearLayout
+                android:id="@+id/points"
+                android:layout_width="match_parent"
+                android:layout_height="20dp"
+                android:layout_alignParentBottom="true"
+                android:gravity="center"
+                android:orientation="horizontal" />
+        </RelativeLayout>
 </LinearLayout>
